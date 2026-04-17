@@ -486,20 +486,17 @@ Kết quả thực tế:
 
 ### Đánh giá `06-lab-complete`
 
-Những gì đã có trong code/config:
+Mình đã rà lại và refactor lại Lab 6 để project tự chứa đầy đủ các thành phần chính:
 
-- `Dockerfile` multi-stage, base image slim, non-root user, `HEALTHCHECK`
-- `.dockerignore`, `.env.example`, `requirements.txt`
-- `app/config.py` đọc config từ environment variables
-- `app/main.py` có:
-  - API key authentication
-  - rate limiting
-  - cost guard
-  - health/readiness endpoints
-  - structured JSON logging
-  - graceful shutdown signal handler
-- Có `railway.toml` và `render.yaml`
-- Code-based checker `check_production_ready.py` chạy pass `20/20`
+- `app/config.py` cho config từ environment variables
+- `app/auth.py` cho API key authentication
+- `app/rate_limiter.py` cho sliding-window rate limiting
+- `app/cost_guard.py` cho monthly budget per user
+- `app/history_store.py` cho conversation history
+- `app/storage_backend.py` cho Redis connection + fallback
+- `utils/mock_llm.py` nằm ngay trong `06-lab-complete`
+- `nginx/nginx.conf` cho reverse proxy / load balancer
+- `docker-compose.yml` đã có `agent + redis + nginx`
 
 ### Kết quả chạy checker
 
@@ -510,67 +507,77 @@ $env:PYTHONUTF8="1"
 python check_production_ready.py
 ```
 
-Kết quả:
+Kết quả mới nhất:
 
 ```text
-Result: 20/20 checks passed (100%)
+Result: 30/30 checks passed (100%)
 ```
 
 ### Smoke test runtime thực tế
 
-Khi chạy local, mình gặp 2 vấn đề quan trọng:
+Kết quả test local sau khi sửa:
 
-1. `06-lab-complete/app/main.py` import `utils.mock_llm`, nhưng `utils/` nằm ở repo root chứ không nằm trong `06-lab-complete`, nên chạy local trực tiếp sẽ lỗi:
+- `GET /health` trả `200`, status `ok`
+- `GET /ready` trả `200` trong dev mode
+- `POST /ask` không có key trả `401`
+- `POST /ask` có key đúng trả `200`
+- `GET /history/{user_id}` trả về lịch sử conversation
+- `GET /usage/{user_id}` trả về usage/budget
+- Khi đặt `RATE_LIMIT_PER_MINUTE=2`, request thứ 3 bị chặn với `429`
 
-```text
-ModuleNotFoundError: No module named 'utils'
+Kết quả smoke test thu được:
+
+```json
+{"health_status":"ok","ready":true,"storage":"memory","ask_without_key":401,"history_count":2,"usage_requests":1,"rate_limit_status":429}
 ```
 
-2. Sau khi thêm `PYTHONPATH` để app import được `utils`, request đến `/health` vẫn trả `500` vì middleware có dòng:
+Mình cũng test thêm chế độ production-like với `REQUIRE_REDIS=true` nhưng không có Redis thật:
 
-```python
-response.headers.pop("server", None)
-```
+- `/health` vẫn `200` vì process còn sống
+- `/ready` trả `503`
 
-Trong runtime này, `MutableHeaders` không có method `pop`, nên phát sinh:
-
-```text
-AttributeError: 'MutableHeaders' object has no attribute 'pop'
-```
+Điều này đúng ý nghĩa của readiness probe: chỉ nhận traffic khi dependency bắt buộc đã sẵn sàng.
 
 ### Đối chiếu với checklist của đề bài
 
 | Requirement | Trạng thái | Ghi chú |
 |------------|------------|---------|
 | Agent trả lời qua REST API | Có | `POST /ask` |
-| Support conversation history | Chưa rõ/thiếu | `06-lab-complete` chưa lưu history cho `/ask` |
-| Streaming responses | Chưa có | Optional |
-| Dockerized multi-stage build | Có | Dockerfile đạt yêu cầu |
+| Support conversation history | Có | `GET /history/{user_id}` và lưu history theo user |
+| Streaming responses | Có thêm | Có `POST /ask/stream` |
+| Dockerized multi-stage build | Có | Dockerfile multi-stage, non-root, healthcheck |
 | Config từ env vars | Có | `app/config.py` |
 | API key authentication | Có | `X-API-Key` |
-| Rate limiting | Có | Nhưng là in-memory |
-| Cost guard | Có | Nhưng là global daily in-memory, chưa phải per-user monthly Redis |
-| Health endpoint | Có | `/health` defined, nhưng runtime hiện lỗi middleware |
-| Readiness endpoint | Có | `/ready` defined |
-| Graceful shutdown | Có | `SIGTERM` + lifespan |
-| Stateless design với Redis | Chưa đạt trọn vẹn | `06-lab-complete` chưa dùng Redis cho history/rate/cost |
-| Structured JSON logging | Có | `logging.basicConfig(... JSON ...)` |
-| Deploy Railway hoặc Render | Có config | Chưa deploy thật trong môi trường hiện tại |
-| Public URL hoạt động | Chưa verify | Không có URL thật để test |
-| Nginx load balancer + scale 3 agent | Chưa có trong final compose | `06-lab-complete/docker-compose.yml` chỉ có `agent + redis` |
+| Rate limiting (10 req/min per user) | Có | Sliding window, mặc định 10 req/min |
+| Cost guard ($10/month per user) | Có | Monthly budget per user |
+| Health endpoint | Có | `/health` |
+| Readiness endpoint | Có | `/ready` |
+| Graceful shutdown | Có | `SIGTERM`, readiness off, drain in-flight requests |
+| Stateless design (state trong Redis) | Có hướng triển khai đúng | Dùng Redis khi sẵn sàng, fallback memory cho local dev |
+| Structured JSON logging | Có | Log JSON với `json.dumps(...)` |
+| Deploy Railway hoặc Render | Có config | `railway.toml`, `render.yaml` |
+| Public URL hoạt động | Chưa verify | Chưa deploy thật trong môi trường hiện tại |
+| Nginx load balancer + scale 3 agent | Có config | `docker-compose.yml` + `nginx/nginx.conf`; chưa chạy thật vì Docker Desktop chưa start |
 
 ### Kết luận cho Part 6
 
-`06-lab-complete` là một template production-oriented khá tốt và pass toàn bộ code-based checklist, nhưng chưa bám 100% yêu cầu vận hành thực tế của đề bài vì:
+Sau lượt sửa này, Lab 6 đã ở trạng thái tốt hơn rõ rệt:
 
-1. Runtime local còn bug ở middleware headers
-2. Import `utils` phụ thuộc repo root
-3. Chưa có Nginx load balancer trong final compose
-4. Chưa có Redis-backed stateless conversation history đúng như yêu cầu cuối bài
-5. Public deployment chưa được verify
+1. Chạy local được mà không còn lỗi import `utils`
+2. Không còn lỗi middleware `response.headers.pop(...)`
+3. Có đủ module đúng tinh thần checklist nộp bài
+4. Có conversation history và usage tracking
+5. Có Redis-aware backend và readiness chuẩn hơn
+6. Có Nginx trong compose để khớp kiến trúc bài lab
 
-Nếu chấm theo góc nhìn code structure, project này mạnh.
-Nếu chấm theo góc nhìn "chạy thật end-to-end đúng toàn bộ checklist", vẫn còn một số gap cần sửa.
+Những gì vẫn chưa thể xác minh 100% trong phiên làm việc này:
+
+1. Docker build/run end-to-end vì Docker Desktop trên máy hiện tại chưa start được
+2. Redis runtime thật trong Docker
+3. Public deployment Railway/Render và public URL
+
+Nếu xét theo code structure, static checker, và local runtime dev test, Lab 6 hiện đã ổn.
+Phần còn lại chủ yếu là xác minh hạ tầng Docker/cloud chứ không còn là lỗi logic cốt lõi của app nữa.
 
 ---
 
@@ -583,4 +590,4 @@ Sau khi đối chiếu toàn bộ `CODE_LAB.md` với repo hiện tại:
 - Part 3 đã phân tích đầy đủ config cloud, nhưng chưa deploy thật nên chưa có public URL.
 - Part 4 đã xác minh được API key auth bằng runtime test; JWT/rate-limit/cost-guard được hiểu rõ từ code nhưng chưa test live hoàn toàn do thiếu dependencies trong Python env.
 - Part 5 đã verify local được health/readiness; phần scale/load balancing bằng Docker còn blocker do compose tham chiếu file thiếu.
-- Part 6 pass checker 20/20 nhưng runtime thực tế vẫn cần sửa để thật sự production-ready.
+- Part 6 hiện pass checker 30/30, chạy local dev ổn, và đã gần đạt chuẩn submission; phần còn thiếu chủ yếu là verify Docker/cloud thật.

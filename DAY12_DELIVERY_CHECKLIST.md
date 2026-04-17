@@ -1,8 +1,8 @@
 #  Delivery Checklist — Day 12 Lab Submission
 
-> **Student Name:** _________________________  
-> **Student ID:** _________________________  
-> **Date:** _________________________
+> **Student Name:** Luu Thi Ngoc Quynh  
+> **Student ID:** 2A202600122  
+> **Date:** 2026-04-17
 
 ---
 
@@ -144,15 +144,31 @@ curl -X POST https://your-agent.railway.app/ask \
 ##  Pre-Submission Checklist
 
 - [ ] Repository is public (or instructor has access)
-- [ ] `MISSION_ANSWERS.md` completed with all exercises
+- [x] `MISSION_ANSWERS.md` completed with all exercises
 - [ ] `DEPLOYMENT.md` has working public URL
-- [ ] All source code in `app/` directory
-- [ ] `README.md` has clear setup instructions
-- [ ] No `.env` file committed (only `.env.example`)
-- [ ] No hardcoded secrets in code
+- [x] All source code in `app/` directory
+- [x] `README.md` has clear setup instructions
+- [x] No `.env` file committed (only `.env.example`)
+- [x] No hardcoded secrets in code
 - [ ] Public URL is accessible and working
 - [ ] Screenshots included in `screenshots/` folder
 - [ ] Repository has clear commit history
+
+##  Current Status Note
+
+The repository is now prepared for submission structure:
+
+- `MISSION_ANSWERS.md` is filled.
+- `06-lab-complete/` contains the final Lab 6 source code.
+- `DEPLOYMENT.md` has been created as a deployment record template.
+- `screenshots/` folder has been created.
+
+The main remaining manual tasks are:
+
+1. Deploy the service publicly on Railway or Render.
+2. Update `DEPLOYMENT.md` with the real URL.
+3. Capture the required screenshots.
+4. Push the final repository to GitHub and make sure access is correct.
 
 ---
 
