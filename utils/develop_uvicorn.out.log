@@ -1,0 +1,3 @@
+[DEBUG] Got question: Hello
+[DEBUG] Using key: sk-hardcoded-fake-key-never-do-this
+INFO:     127.0.0.1:62516 - "POST /ask?question=Hello HTTP/1.1" 500 Internal Server Error

@@ -1,0 +1,92 @@
+OPENAI_API_KEY not set — using mock LLM
+INFO:     Started server process [14604]
+INFO:     Waiting for application startup.
+{"ts":"2026-04-17 17:03:34,212","lvl":"INFO","msg":"{"event": "startup", "app": "Production AI Agent", "version": "1.0.0", "environment": "development"}"}
+{"ts":"2026-04-17 17:03:34,313","lvl":"INFO","msg":"{"event": "ready"}"}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8020 (Press CTRL+C to quit)
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Python314\Lib\site-packages\starlette\_utils.py", line 77, in collapse_excgroups
+  |     yield
+  |   File "C:\Python314\Lib\site-packages\starlette\middleware\base.py", line 186, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  |   File "C:\Python314\Lib\site-packages\anyio\_backends\_asyncio.py", line 783, in __aexit__
+  |     raise BaseExceptionGroup(
+  |         "unhandled errors in a TaskGroup", self._exceptions
+  |     ) from None
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Python314\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         self.scope, self.receive, self.send
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "C:\Python314\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Python314\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "C:\Python314\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Python314\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    |     raise exc
+    |   File "C:\Python314\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "C:\Python314\Lib\site-packages\starlette\middleware\base.py", line 185, in __call__
+    |     with collapse_excgroups():
+    |          ~~~~~~~~~~~~~~~~~~^^
+    |   File "C:\Python314\Lib\contextlib.py", line 162, in __exit__
+    |     self.gen.throw(value)
+    |     ~~~~~~~~~~~~~~^^^^^^^
+    |   File "C:\Python314\Lib\site-packages\starlette\_utils.py", line 83, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Python314\Lib\site-packages\starlette\middleware\base.py", line 187, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\quynh\Downloads\AI20K\LAB12_LUUTHINGOCQUYNH_2A202600122\06-lab-complete\app\main.py", line 148, in request_middleware
+    |     response.headers.pop("server", None)
+    |     ^^^^^^^^^^^^^^^^^^^^
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python314\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Python314\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Python314\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Python314\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "C:\Python314\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Python314\Lib\site-packages\starlette\middleware\base.py", line 185, in __call__
+    with collapse_excgroups():
+         ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python314\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Python314\Lib\site-packages\starlette\_utils.py", line 83, in collapse_excgroups
+    raise exc
+  File "C:\Python314\Lib\site-packages\starlette\middleware\base.py", line 187, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\quynh\Downloads\AI20K\LAB12_LUUTHINGOCQUYNH_2A202600122\06-lab-complete\app\main.py", line 148, in request_middleware
+    response.headers.pop("server", None)
+    ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
