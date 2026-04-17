@@ -38,8 +38,13 @@ This project is the final Lab 6 deliverable for Day 12. It combines:
 |-- .env.example
 |-- .dockerignore
 |-- railway.toml
-|-- render.yaml
 `-- check_production_ready.py
+```
+
+Root repository:
+
+```text
+render.yaml
 ```
 
 ## Local Development
@@ -111,8 +116,9 @@ curl.exe -X POST http://localhost/ask ^
 
 ### Render
 
-- Use `render.yaml`
+- Use the root `render.yaml`
 - The blueprint defines both the web service and a Redis service
+- For a full GitHub-to-Render flow, see `RENDER_DEPLOYMENT.md`
 
 ## Validation
 
@@ -124,3 +130,21 @@ python check_production_ready.py
 ```
 
 It performs a static validation of the Lab 6 deliverable and confirms the expected files and features are present.
+
+For a quick local smoke test after the API is running:
+
+```powershell
+$env:AGENT_API_KEY="change-me-before-production"
+python test_local.py
+```
+
+## Keep It Simple
+
+Use these files as the main reference:
+
+- `README.md`: local setup, Docker, validation
+- `RENDER_DEPLOYMENT.md`: Render deployment steps
+- `../DEPLOYMENT.md`: final public URL and submission proof
+- `.env.example`: source of truth for environment variables
+
+If you deploy the whole repository to Render, use the root-level `render.yaml`.

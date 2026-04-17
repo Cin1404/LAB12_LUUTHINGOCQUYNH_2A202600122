@@ -22,6 +22,10 @@ def file_exists(base: str, path: str) -> bool:
     return os.path.exists(os.path.join(base, path))
 
 
+def any_file_exists(base: str, paths: list[str]) -> bool:
+    return any(file_exists(base, path) for path in paths)
+
+
 def file_contains(base: str, path: str, snippets: list[str]) -> bool:
     full_path = os.path.join(base, path)
     if not os.path.exists(full_path):
@@ -84,7 +88,7 @@ def run_checks() -> bool:
     results.append(check("Compose includes Redis", file_contains(base, "docker-compose.yml", ["redis:", "REDIS_URL"])))
     results.append(check("Compose includes Nginx", file_contains(base, "docker-compose.yml", ["nginx:", "80:80"])))
     results.append(check("Railway config exists", file_exists(base, "railway.toml")))
-    results.append(check("Render config exists", file_exists(base, "render.yaml")))
+    results.append(check("Render config exists", any_file_exists(base, ["render.yaml", "../render.yaml"])))
 
     passed = sum(1 for item in results if item["passed"])
     total = len(results)
